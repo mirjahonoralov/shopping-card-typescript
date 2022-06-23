@@ -1,22 +1,21 @@
-import Button from "@material-ui/core/Button";
-import React from "react";
+import { Button } from "@material-ui/core";
+import { ProductType } from "../../App";
 import { Wrapper } from "./style";
-import { CardItemType } from "../../App";
 
-type Props = {
-  item: CardItemType;
-  handleAddToCard: (clickedItem: CardItemType) => void;
+type props = {
+  item: ProductType;
+  addToCard: (selectedItem: ProductType) => void;
 };
 
-const Item: React.FC<Props> = ({ item, handleAddToCard }) => (
+const Item: React.FC<props> = ({ item, addToCard }) => (
   <Wrapper>
     <img src={item.image} alt="" />
-    <div>
-      <h3>{item.title}</h3>
-      <p>{item.description}</p>
-      <h3>${item.price}</h3>
-    </div>
-    <Button onClick={() => handleAddToCard(item)}>Add to Card</Button>
+    <h3>{item.title}</h3>
+    <p>{item.description}</p>
+    <h3>${item.price.toFixed(2)}</h3>
+    <Button variant="contained" color="primary" onClick={() => addToCard(item)}>
+      Sale
+    </Button>
   </Wrapper>
 );
 

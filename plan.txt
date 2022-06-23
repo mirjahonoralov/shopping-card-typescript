@@ -1,0 +1,20 @@
+ --- App ---
+crate type
+get data from mock api
+setup useQuery
+setup grid
+create functions
+loading error success
+render data
+
+ --- item ---
+render card and adding btn
+
+
+ --- card ---
+stay in drawer
+create functions
+
+ --- cardItem ---
+render item
+functions

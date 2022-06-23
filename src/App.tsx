@@ -1,92 +1,90 @@
-import { useQuery } from "react-query";
-import { useState } from "react";
-
 // Components
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Drawer from "@material-ui/core/Drawer";
 import { Badge, Grid } from "@material-ui/core";
 import AddShoppingCart from "@material-ui/icons/AddShoppingCart";
-
-// styles
-import { StyledButton } from "./App.styles";
+import { useQuery } from "react-query";
+import { StyledButton, Wrapper } from "./App.styles";
 import Item from "./components/Item";
+import { useState } from "react";
 import Card from "./components/Card";
 
-// types
-export type CardItemType = {
+export type ProductType = {
   id: number;
-  category: string;
   description: string;
+  category: string;
   image: string;
-  price: number;
   title: string;
+  price: number;
   amount: number;
 };
 
-const getProducts = async (): Promise<CardItemType[]> =>
-  await (await fetch("https://fakestoreapi.com/products")).json();
+const getAllData = async (): Promise<ProductType[]> => {
+  return await (await fetch("https://fakestoreapi.com/products")).json();
+};
 
 const App = () => {
-  const [cardOpen, setCardOpen] = useState(false);
-  const [cardItems, setCardItems] = useState([] as CardItemType[]);
-  const { data, isLoading, error } = useQuery<CardItemType[]>(
-    "products",
-    getProducts
-  );
+  const [openCard, setOpenCard] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState([] as ProductType[]);
+  const { data, error, isLoading } = useQuery("products", getAllData);
+  console.log(data);
 
-  const getTotalItems = (items: CardItemType[]) =>
-    items.reduce((acc, item) => acc + item.amount, 0);
+  const calcTotal = () =>
+    selectedProducts.reduce((prev, item) => prev + item.amount, 0);
 
-  const handleAddToCard = (clickedItem: CardItemType) => {
-    setCardItems((prev) => {
-      const isItemInCard = prev.find((item) => item.id === clickedItem.id);
+  const handleAddToCard = (product: ProductType) => {
+    setSelectedProducts((prev) => {
+      const isThereProduct = prev.find((item) => item.id === product.id);
+      console.log(isThereProduct, "isThereProduct");
 
-      if (isItemInCard)
-        return prev.map((item) =>
-          item.id === clickedItem.id
-            ? { ...item, amount: item.amount + 1 }
-            : item
-        );
-      else return [...prev, { ...clickedItem, amount: 1 }];
+      if (isThereProduct)
+        return prev.map((item) => {
+          if (item.id === product.id)
+            return { ...item, amount: item.amount + 1 };
+          else return item;
+        });
+      else return [...prev, { ...product, amount: 1 }];
     });
   };
 
-  const handleRemoveFromCard = (id: number) => {
-    setCardItems((prev) =>
-      prev.reduce((acc, item) => {
+  const handleRemoveProduct = (id: number) =>
+    setSelectedProducts((prev) =>
+      prev.reduce((old, item) => {
         if (item.id === id) {
-          if (item.amount === 1) return acc;
-          return [...acc, { ...item, amount: item.amount - 1 }];
-        } else return [...acc, item];
-      }, [] as CardItemType[])
+          if (item.amount === 1) return old;
+          else return [...old, { ...item, amount: item.amount - 1 }];
+        }
+        return [...old, item];
+      }, [] as ProductType[])
     );
-  };
 
   if (isLoading) return <LinearProgress />;
-  if (error) return <div>Something went wrong</div>;
+  if (error) return <div>something was wrong</div>;
 
   return (
-    <Grid container spacing={3}>
-      <Drawer open={cardOpen} anchor="right" onClose={() => setCardOpen(false)}>
+    <Wrapper>
+      <Drawer anchor="right" open={openCard} onClose={() => setOpenCard(false)}>
         <Card
-          cardItems={cardItems}
+          cardItems={selectedProducts}
           addToCard={handleAddToCard}
-          removeItemFromCard={handleRemoveFromCard}
+          removeProduct={handleRemoveProduct}
         />
       </Drawer>
 
-      <StyledButton onClick={() => setCardOpen(true)}>
-        <Badge badgeContent={getTotalItems(cardItems)} color="error">
+      <Grid container spacing={3}>
+        {data?.map((item) => (
+          <Grid xs={12} sm={4} item key={item.id}>
+            <Item item={item} addToCard={handleAddToCard} />
+          </Grid>
+        ))}
+      </Grid>
+
+      <StyledButton onClick={() => setOpenCard(true)}>
+        <Badge badgeContent={calcTotal()} color="error">
           <AddShoppingCart />
         </Badge>
       </StyledButton>
-
-      {data?.map((item) => (
-        <Grid item key={item.id} xs={12} sm={4}>
-          <Item item={item} handleAddToCard={handleAddToCard} />
-        </Grid>
-      ))}
-    </Grid>
+    </Wrapper>
   );
 };
 
