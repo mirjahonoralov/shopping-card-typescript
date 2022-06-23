@@ -8,7 +8,7 @@ import { Badge, Grid } from "@material-ui/core";
 import AddShoppingCart from "@material-ui/icons/AddShoppingCart";
 
 // styles
-import { StyledButton, Wrapper } from "./App.styles";
+import { StyledButton } from "./App.styles";
 import Item from "./components/Item";
 import Card from "./components/Card";
 
